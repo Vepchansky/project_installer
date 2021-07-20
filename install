@@ -1,0 +1,110 @@
+#!/bin/bash
+
+spisok() {
+	n=1
+	if [[ $(ls /opt/projects) ]]; then
+
+	echo -en "\033[36m
+	--- Список установленных проектов ---
+	"
+	for var in $(ls /opt/projects); do
+		if [[ "$var" != "clear" ]] && [[ "$var" != "cre_prod" ]]; then
+			echo "${n}. $var "
+			n=$(($n + 1))
+		fi
+	done	
+	echo -en "
+	\033[0m
+	"
+	else
+	echo "\033[31m
+	 Проекты не установлены.
+	 \033[0m
+       	"
+	fi	
+}
+
+password() {
+	cd /opt/projects/$1
+	source bin/activate
+	cd $1
+	python manage.py createsuperuser
+	deactivate
+	cd /opt
+}
+
+BASE_DIR=$(pwd)
+while true; do
+
+	cd $BASE_DIR
+	spisok
+echo -en "
+\033[33m
+Выберите команду:
+
+1. Установить проект
+2. Удалить проект
+3. Поменять домен
+4. Установить пароль суперпользователя
+5. Установить SSL сертификат
+6. Добавть домен к проекту
+7. Удалить домен из проекта
+
+0. Выйти
+\033[0m
+"
+echo -en "\033[34m"
+read -p " Введите номер выбранной команды: "
+echo -en "\033[0m"
+if [[ "$REPLY" =~ ^[0-7]$ ]]; then
+	if [[ "$REPLY" =~ 1 ]]; then
+		./firstscr
+		continue
+	fi
+	if [[ "$REPLY" == 2 ]]; then
+		spisok
+		./delete.sh
+		continue
+	fi
+	if [[ "$REPLY" == 3 ]]; then
+		./replace.sh $BASE_DIR
+		continue
+	fi
+	if [[ "$REPLY" == 4 ]]; then
+		read -p "Введите название проекта(для выхода 'n'): " proj
+		if [[ "$proj" != "n" ]]; then
+			password $proj
+			systemctl restart emperor.uwsgi.service
+			systemctl restart nginx.service
+		else
+			continue
+		fi
+	fi
+	if [[ "$REPLY" == 5 ]]; then
+		certbot --nginx
+		systemctl restart emperor.uwsgi.service
+		systemctl restart nginx.service
+		continue
+	fi
+	if [[ "$REPLY" == 6 ]]; then
+		./extend.sh $BASE_DIR
+		systemctl restart emperor.uwsgi.service
+		systemctl restart nginx.service
+		continue
+	fi
+	if [[ "$REPLY" == 7 ]]; then
+		./delete_domen.sh
+		systemctl restart emperor.uwsgi.service
+		systemctl restart nginx.service
+		continue
+	fi
+	if [[ "$REPLY" == 0 ]]; then
+		break
+	fi
+else
+	echo -en "\033[31mНеверный ввод.\033[0m" >&2
+	continue
+fi
+done
+echo -en " \033[31mПрограмма закрыта\033[0m 
+"

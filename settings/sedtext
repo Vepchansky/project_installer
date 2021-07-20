@@ -1,0 +1,12 @@
+#!/bin/bash
+
+SET_DIR=$3/settings
+
+cat $SET_DIR/base1 | sed "s/clear/$1/" > /opt/projects/$1/$1/$1/settings/base.py
+cat $SET_DIR/base2 | sed "s/dataname/$(echo $1 | tr '[:upper:]' '[:lower:]')/" >> /opt/projects/$1/$1/$1/settings/base.py
+cat $SET_DIR/base3 | sed "s/clear/$1/" >> /opt/projects/$1/$1/$1/settings/base.py
+sed -i "s/path('admin\/'/path('enter12\/'/" /opt/projects/$1/$1/$1/urls.py
+
+cat $SET_DIR/dev_o.py | sed "s/name_host/$2/; s/DEBUG = True/DEBUG = False/" > /opt/projects/$1/$1/$1/settings/dev.py
+cat $SET_DIR/prod_o.py | sed "s/local_host_name/$2/" > /opt/projects/$1/$1/$1/settings/prod.py
+
