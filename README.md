@@ -5,3 +5,5 @@
 	machine
 	- Go to directory "Install" and start command "./install"
 	- Choose among the listned needed action
+
+	test
