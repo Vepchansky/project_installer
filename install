@@ -33,12 +33,21 @@ spisok() {
 }
 
 password() {
-	cd /opt/projects/$1
-	source bin/activate
-	cd $1
-	python manage.py createsuperuser
-	deactivate
-	cd /opt
+	if [ -e /opt/projects -a -e /opt/projects/$1 ]; then 
+		cd /opt/projects/$1
+		source bin/activate
+		cd $1
+		python manage.py createsuperuser
+		deactivate
+		cd $BASE_DIR
+		systemctl restart emperor.uwsgi.service
+		systemctl restart nginx.service
+	else
+		echo -en "\033[31m
+Проекта $1 не существует
+\033[0m
+"
+	fi
 }
 
 BASE_DIR=$(pwd)
@@ -84,8 +93,6 @@ if [[ "$REPLY" =~ ^[0-7]$ ]]; then
 		read -p "Введите название проекта(для выхода 'n'): " proj
 		if [[ "$proj" != "n" ]]; then
 			password $proj
-			systemctl restart emperor.uwsgi.service
-			systemctl restart nginx.service
 		else
 			continue
 		fi
@@ -112,9 +119,13 @@ if [[ "$REPLY" =~ ^[0-7]$ ]]; then
 		break
 	fi
 else
-	echo -en "\033[31mНеверный ввод.\033[0m" >&2
+	echo -en "
+	\033[31mНеверный ввод.\033[0m
+	" >&2
 	continue
 fi
 done
-echo -en " \033[31mПрограмма закрыта\033[0m 
+echo -en "\033[31m
+       	   Программа закрыта
+\033[0m 
 "
