@@ -15,6 +15,9 @@ else
 			rm -r /opt/projects/$proj
 			rm /etc/uwsgi/vassals/${proj}_uwsgi.ini
 		fi
+		
+		# Удаляются все домены, относяшиеся к проекту
+		
 		sed -i "/${proj}1/, /${proj}2/d" ${str##*->} 
 		cat $BASE_DIR/databaseD | sed "s/namedb/$proj/" > $BASE_DIR/databaseDrop
 		su - postgres -c "psql -f $BASE_DIR/databaseDrop"
